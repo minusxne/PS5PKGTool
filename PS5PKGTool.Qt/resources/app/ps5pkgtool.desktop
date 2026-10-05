@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=PS5 PKG Tool
+GenericName=PS5 Package and Image Manager
+Comment=Manage, inspect, convert and build PS5 dumps, images and debug packages
+Exec=ps5pkgtool %F
+Icon=ps5pkgtool
+Terminal=false
+Categories=Utility;Archiving;Development;
+Keywords=PS5;PKG;FPKG;exFAT;FFPKG;FFPFSC;dump;PlayStation;
+StartupWMClass=ps5pkgtool
+SingleMainWindow=true

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.pearlxcore.PS5PkgTool</id>
+  <name>PS5 PKG Tool</name>
+  <summary>Manage, inspect, convert and build PS5 dumps, images and debug packages</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-only</project_license>
+  <launchable type="desktop-id">ps5pkgtool.desktop</launchable>
+  <url type="homepage">https://github.com/pearlxcore/PS5PkgTool</url>
+  <url type="bugtracker">https://github.com/pearlxcore/PS5PkgTool/issues</url>
+  <description>
+    <p>
+      A library manager for PS5 dumps, packages and images with a console-inspired interface.
+      Browse titles with their artwork, inspect trophies, activities, executables and package
+      structure, convert between dump folders and exFAT, FFPKG and FFPFSC images, and build
+      debug packages, all through a resumable task queue.
+    </p>
+    <p>This is not software for obtaining free PS5 games.</p>
+  </description>
+  <provides>
+    <binary>ps5pkgtool</binary>
+  </provides>
+  <content_rating type="oars-1.1"/>
+  <releases>
+    <release version="1.2.0" date="2026-10-05"/>
+  </releases>
+</component>

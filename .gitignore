@@ -7,3 +7,9 @@ artifacts/
 docs/
 PS5PKGTool.SmokeTests/
 CHANGELOG.md
+
+# Linux edition
+build/
+build-*/
+dist/
+*.AppImage

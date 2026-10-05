@@ -25,15 +25,9 @@ public static class Ps5DiskSpace
     /// <param name="tempDirectory">Workspace folder, or null for the system temp folder.</param>
     public static Ps5DiskSpaceCheck Check(long rawPayloadBytes, string outputPath, string? tempDirectory)
     {
-        DiskSpaceReport report = Measure(
-            HostRequirements(DiskSpaceGuard.Estimate(rawPayloadBytes, outputPath, tempDirectory), outputPath, tempDirectory));
-        Ps5DiskSpaceStatus status = report.Status switch
-        {
-            DiskSpaceStatus.Insufficient => Ps5DiskSpaceStatus.Insufficient,
-            DiskSpaceStatus.NearLimit => Ps5DiskSpaceStatus.NearLimit,
-            _ => Ps5DiskSpaceStatus.Ok
-        };
-        return new Ps5DiskSpaceCheck(status, DiskSpaceGuard.Describe(report));
+        IReadOnlyList<SpaceRequirement> requirements =
+            HostRequirements(DiskSpaceGuard.Estimate(rawPayloadBytes, outputPath, tempDirectory), outputPath, tempDirectory);
+        return ToCheck(Measure(requirements), requirements);
     }
 
     /// <summary>
@@ -64,14 +58,7 @@ public static class Ps5DiskSpace
             }
         }
 
-        DiskSpaceReport report = Measure(requirements);
-        Ps5DiskSpaceStatus status = report.Status switch
-        {
-            DiskSpaceStatus.Insufficient => Ps5DiskSpaceStatus.Insufficient,
-            DiskSpaceStatus.NearLimit => Ps5DiskSpaceStatus.NearLimit,
-            _ => Ps5DiskSpaceStatus.Ok,
-        };
-        return new Ps5DiskSpaceCheck(status, DiskSpaceGuard.Describe(report));
+        return ToCheck(Measure(requirements), requirements);
     }
 
     /// <summary>
@@ -95,6 +82,31 @@ public static class Ps5DiskSpace
             new SpaceRequirement(outputVolume, total - total / 2, "output"),
         ];
     }
+
+    private static Ps5DiskSpaceCheck ToCheck(DiskSpaceReport report, IReadOnlyList<SpaceRequirement> requirements)
+    {
+        Ps5DiskSpaceStatus status = report.Status switch
+        {
+            DiskSpaceStatus.Insufficient => Ps5DiskSpaceStatus.Insufficient,
+            DiskSpaceStatus.NearLimit => Ps5DiskSpaceStatus.NearLimit,
+            _ => Ps5DiskSpaceStatus.Ok,
+        };
+        // The engine leaves the volume out of an "OK" description; name each volume here instead.
+        if (status == Ps5DiskSpaceStatus.Ok && !OperatingSystem.IsWindows())
+        {
+            string message = string.Join("; ", requirements.Select(requirement =>
+            {
+                long? free = Ps5MountInfo.AvailableFreeSpace(requirement.Root);
+                return $"needs ~{Gigabytes(requirement.Bytes)} on {requirement.Root} ({requirement.What})" +
+                       (free is { } bytes ? $", {Gigabytes(bytes)} free" : string.Empty);
+            }));
+            return new Ps5DiskSpaceCheck(status, message);
+        }
+        return new Ps5DiskSpaceCheck(status, DiskSpaceGuard.Describe(report));
+    }
+
+    private static string Gigabytes(long bytes) =>
+        (bytes / (1024d * 1024 * 1024)).ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) + " GB";
 
     private static DiskSpaceReport Measure(IReadOnlyList<SpaceRequirement> requirements) =>
         OperatingSystem.IsWindows()
