@@ -54,6 +54,17 @@ QString BridgeClient::locateBridge()
     return candidates.last();
 }
 
+static bool hasIcu()
+{
+    const QStringList directories = {QStringLiteral("/usr/lib/x86_64-linux-gnu"), QStringLiteral("/lib/x86_64-linux-gnu"),
+                                     QStringLiteral("/usr/lib64"), QStringLiteral("/lib64"), QStringLiteral("/usr/lib"),
+                                     QStringLiteral("/lib"), QStringLiteral("/usr/local/lib")};
+    for (const QString &directory : directories)
+        if (!QDir(directory).entryList({QStringLiteral("libicuuc.so*")}, QDir::Files | QDir::System).isEmpty())
+            return true;
+    return false;
+}
+
 void BridgeClient::start()
 {
     if (m_process.state() != QProcess::NotRunning)
@@ -71,6 +82,10 @@ void BridgeClient::start()
             env.insert(QStringLiteral("DOTNET_ROOT"), userDotnet);
     }
     env.insert(QStringLiteral("DOTNET_CLI_TELEMETRY_OPTOUT"), QStringLiteral("1"));
+    // .NET needs ICU for culture data. When a system has none (some minimal installs), run the
+    // engine in invariant mode instead of letting it refuse to start.
+    if (!env.contains(QStringLiteral("DOTNET_SYSTEM_GLOBALIZATION_INVARIANT")) && !hasIcu())
+        env.insert(QStringLiteral("DOTNET_SYSTEM_GLOBALIZATION_INVARIANT"), QStringLiteral("1"));
     m_process.setProcessEnvironment(env);
     m_process.setWorkingDirectory(QFileInfo(m_executable).absolutePath());
     m_process.start(m_executable, {});

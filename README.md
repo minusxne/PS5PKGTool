@@ -185,6 +185,19 @@ explains what each option means before you use it.
 
 ## Install and build
 
+### Download (AppImage)
+
+Grab `PS5_PKG_Tool-<version>-x86_64.AppImage` from the
+[Releases page](https://github.com/minusxne/PS5PKGTool/releases), then:
+
+```sh
+chmod +x PS5_PKG_Tool-*-x86_64.AppImage
+./PS5_PKG_Tool-*-x86_64.AppImage
+```
+
+It bundles Qt and the engine, so nothing needs to be installed. It works on x86-64 distributions
+from about 2022 onward. To build from source instead, read on.
+
 ### Quick start (one command)
 
 ```sh
@@ -274,7 +287,7 @@ stages everything under `dist/`, ready to run from that folder.
 | Option | What it does |
 |---|---|
 | `--install ~/.local` | Also installs the app, desktop entry, icons and AppStream metadata under a prefix. Use `sudo` for `/usr/local`. |
-| `--appimage` | Packages `dist/` as `PS5_PKG_Tool-x86_64.AppImage` with linuxdeploy, which it downloads if needed. |
+| `--appimage` | Packages `dist/` as `PS5_PKG_Tool-x86_64.AppImage` (downloads linuxdeploy and appimagetool if needed). |
 | `--qt ~/Qt/6.8.2/gcc_64` | Uses a Qt from the online installer instead of the system one. |
 | `--debug`, `--jobs N`, `--clean` | Debug build, parallel jobs, start from scratch. |
 
