@@ -73,7 +73,7 @@ Item {
                 Layout.fillWidth: true
                 Layout.leftMargin: 12
                 spacing: 3
-                Text { text: root.set ? root.set.title : ""; color: Theme.text; font.pixelSize: Theme.fontBody + 1; font.weight: Font.DemiBold; elide: Text.ElideRight; Layout.fillWidth: true }
+                Text { text: root.set && root.set.title ? root.set.title : ""; color: Theme.text; font.pixelSize: Theme.fontBody + 1; font.weight: Font.DemiBold; elide: Text.ElideRight; Layout.fillWidth: true }
                 Text {
                     text: root.set ? [root.set.npCommunicationId, qsTr("version %1").arg(root.set.version), qsTr("language %1").arg(root.set.language),
                                       root.set.integrityValid ? qsTr("integrity OK") : qsTr("integrity check failed")].join(" · ") : ""

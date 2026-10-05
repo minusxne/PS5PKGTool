@@ -225,7 +225,7 @@ FocusScope {
                     }
                     contentItem: RowLayout {
                         spacing: 14
-                        Item { width: 4 }
+                        Item { implicitWidth: 4 }
                         Icon {
                             name: { const m = { convert: "convert", extract: "extract", verify: "verify", edit: "edit", repair: "repair", ampr: "layers", rebuild: "refresh" }; return m[actionTile.modelData.id] || "tools" }
                             size: 22
@@ -375,7 +375,7 @@ FocusScope {
                                 PsSpinBox { from: 1; to: 9; value: page.options.level || 7; onValueModified: page.setOption("level", value) }
                                 Text { text: qsTr("Minimum gain"); color: Theme.textDim }
                                 PsSpinBox { from: 0; to: 100; value: page.options.gain === undefined ? 1 : page.options.gain; textFromValue: function (v) { return v + " %" }; valueFromText: function (t) { return parseInt(t) }; onValueModified: page.setOption("gain", value) }
-                                Item { width: 1 }
+                                Item { implicitWidth: 1 }
                                 Text { text: qsTr("Blocks that shrink by less than this stay uncompressed, which keeps loading fast."); color: Theme.textFaint; font.pixelSize: Theme.fontSmall; wrapMode: Text.WordWrap; Layout.maximumWidth: 420 }
                             }
 
@@ -432,7 +432,7 @@ FocusScope {
                                         PsTextField { Layout.preferredWidth: 320; text: page.options.temp || ""; onEditingFinished: page.setOption("temp", text) }
                                         PsButton { compact: true; iconName: "folder"; onClicked: App.pickFolder(qsTr("Workspace folder"), function (p) { page.setOption("temp", p) }) }
                                     }
-                                    Item { width: 1 }
+                                    Item { implicitWidth: 1 }
                                     ColumnLayout {
                                         PsCheckBox { text: qsTr("Deterministic build (same input, same output)"); checked: !!page.options.deterministic; onToggled: page.setOption("deterministic", checked) }
                                         PsCheckBox { text: qsTr("Fake-sign modules"); enabled: page.options.backend !== "lpp"; checked: !!page.options.fakeSign; onToggled: page.setOption("fakeSign", checked) }

@@ -7,6 +7,9 @@ project(ps5pkgtool VERSION 1.2.0 LANGUAGES CXX
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
+# Keep a Qt that lives outside the system library paths (e.g. the online installer) reachable
+# after "cmake --install"; system Qt packages are unaffected.
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
 
 find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2 Network DBus Svg)
 find_package(Qt6 6.5 QUIET COMPONENTS Multimedia)

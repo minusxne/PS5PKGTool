@@ -334,7 +334,7 @@ ApplicationWindow {
                     const jobs = [["ffpfsc", 0], ["exfat", 1], ["pkg", 3], ["ffpkg", 4]]
                     for (let j = 0; j < jobs.length && j < ids.length; ++j)
                         App.call("tools.enqueue", { source: ids[jobs[j][1]], action: "convert", target: jobs[j][0], overwrite: true,
-                                                   output: startup.screenshot + "-" + j + "." + (jobs[j][0] === "pkg" ? "pkg" : jobs[j][0]),
+                                                   output: Desktop.joinPath(Desktop.parentDir(startup.demoLibrary || startup.screenshot), "output/demo-" + j + "." + jobs[j][0]),
                                                    options: { backend: "ppt", playGo: 1, compression: "Stored" } })
                     App.page = "tasks"
                     break

@@ -61,7 +61,7 @@ FocusScope {
                 }
                 contentItem: RowLayout {
                     spacing: 14
-                    Item { width: 2 }
+                    Item { implicitWidth: 2 }
                     Icon { name: entry.modelData.icon; size: 22; color: entry.active ? "#0b0e14" : "white" }
                     ColumnLayout {
                         spacing: 1

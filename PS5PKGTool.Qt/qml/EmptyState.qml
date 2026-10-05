@@ -12,7 +12,7 @@ ColumnLayout {
 
     Rectangle {
         Layout.alignment: Qt.AlignHCenter
-        width: 84; height: 84; radius: 42
+        Layout.preferredWidth: 84; Layout.preferredHeight: 84; radius: 42
         color: Qt.rgba(1, 1, 1, 0.07)
         Icon { anchors.centerIn: parent; name: root.icon; size: 38; opacity: 0.85 }
     }

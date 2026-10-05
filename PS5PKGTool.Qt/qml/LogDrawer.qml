@@ -20,7 +20,7 @@ Drawer {
         spacing: 10
         RowLayout {
             Text { text: qsTr("Activity log"); color: Theme.text; font.pixelSize: Theme.fontHeading; font.weight: Font.DemiBold }
-            Item { width: 12 }
+            Item { implicitWidth: 12 }
             Repeater {
                 model: ["All", "Info", "Warn", "Error", "Engine"]
                 delegate: Chip { required property string modelData; text: modelData; selected: drawer.level === modelData; onClicked: drawer.level = modelData }

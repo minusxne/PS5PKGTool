@@ -37,7 +37,7 @@ License. Copyright (c) 2026, SvenGDK. The original copyright and license text ar
 
 ## DarkUI
 
-The user interface is built on DarkUI, licensed under the MIT License.
+The Windows edition's user interface is built on DarkUI, licensed under the MIT License.
 Copyright (c) 2017 Robin (Robin Perris). https://github.com/RobinPerris/DarkUI
 
 ## BCnEncoder.Net
@@ -47,12 +47,15 @@ encode BC7 textures for PS5 CNT media. https://github.com/Nominom/BCnEncoder.NET
 
 ## Oodle.NET
 
-Oodle.NET is distributed under the MIT License. Copyright (c) 2025 NotOfficer.
-It is the managed wrapper used to load the native Oodle decoder.
+Oodle.NET (MIT License, Copyright (c) 2025 NotOfficer) was the managed wrapper for the native Oodle
+decoder. Kraken is now decoded and encoded by the managed engines, and the package reference has
+been removed from `PS5PKGTool.Core`.
 
 ## Oodle Data Compression
 
-PS5PKGTool includes the 64 bit Oodle Data Compression 2.9.10 redistributable
+This section applies to the Windows edition only; the Linux edition does not ship or load Oodle.
+
+The Windows release of PS5PKGTool includes the 64 bit Oodle Data Compression 2.9.10 redistributable
 `oo2core_9_win64.dll`. Oodle is proprietary Licensed Technology supplied by Epic Games
 and RAD Game Tools and is used under the Unreal Engine End User License Agreement:
 https://www.unrealengine.com/eula/unreal
@@ -67,6 +70,28 @@ or liabilities relating to Epic Games' or RAD Game Tools' Licensed Technology.
 
 Bundled file SHA256:
 `6F5D41A7892EA6B2DB420F2458DAD2F84A63901C9A93CE9497337B16C195F457`
+
+## Linux edition
+
+The Linux edition (`PS5PKGTool.Bridge` and `PS5PKGTool.Qt`) adds the following components:
+
+- **Qt 6** (Qt Base, Qt Declarative / Qt Quick, Qt Quick Controls, Qt SVG, Qt D-Bus, and optionally
+  Qt Multimedia), used under the GNU Lesser General Public License v3.0 and dynamically linked.
+  Copyright (c) The Qt Company Ltd. and other contributors. https://www.qt.io
+- **.NET runtime**, MIT License, Copyright (c) .NET Foundation and Contributors. The engine is
+  published self-contained, so the runtime ships next to `ps5pkgtool-bridge`.
+- **Magick.NET native library for linux-x64** (`Magick.Native-Q8-x64.dll.so`, Magick.NET 14.15.0),
+  Apache License 2.0, Copyright (c) Dirk Lemstra; it bundles ImageMagick (ImageMagick License).
+  It is downloaded from NuGet at build time and placed next to the vendored LibProsperoPkg 1.2.0,
+  which needs it to encode artwork. https://github.com/dlemstra/Magick.NET
+- **LibProsperoPkg 1.2.0 on Linux**: the vendored payload is copied without
+  `libScePubTools.dll` (a Windows-only C++/CLI assembly that cannot load on Linux) and without the
+  win-x64 Magick native library.
+- **xUnit** and the **Microsoft Test SDK** (Apache License 2.0 / MIT) are used by
+  `PS5PKGTool.Bridge.Tests` only and are not distributed.
+- The interface icons under `PS5PKGTool.Qt/resources/icons` and the procedurally generated demo
+  artwork were made for this project and are covered by the project's GPL-3.0 license. The
+  application icon is the Windows edition's icon.
 
 ## PS4 PKG Tool assets
 
