@@ -29,7 +29,7 @@ Suggestions are welcome. Report bugs [here](https://github.com/pearlxcore/PS5Pkg
 - [Linux edition](#linux-edition)
   - [Screenshots](#screenshots)
   - [Features](#features)
-  - [Install and build](#install-and-build)
+  - [Install and build](#install-and-build) ([quick start](#quick-start-one-command))
   - [Using the app](#using-the-app)
   - [Search syntax](#search-syntax)
   - [Keyboard shortcuts](#keyboard-shortcuts)
@@ -185,6 +185,38 @@ explains what each option means before you use it.
 
 ## Install and build
 
+### Quick start (one command)
+
+```sh
+git clone -b linux-qt https://github.com/minusxne/PS5PKGTool.git
+cd PS5PKGTool
+./setup-linux.sh
+```
+
+`setup-linux.sh` does everything, asking before each step:
+
+1. Installs the build dependencies with your package manager (apt, dnf, pacman or zypper; needs
+   sudo).
+2. Installs the .NET 10 SDK for your user in `~/.dotnet` if it is missing (no sudo).
+3. Builds the app.
+4. Installs it to `~/.local`, so **PS5 PKG Tool** appears in your application menu.
+
+| Command | What it does |
+|---|---|
+| `./setup-linux.sh --yes` | Same, without questions (sudo still asks for your password). |
+| `./setup-linux.sh --no-deps` | Skips the package step, if you installed the dependencies yourself. |
+| `./setup-linux.sh --no-install` | Builds only. Run `./dist/bin/ps5pkgtool`. |
+| `./setup-linux.sh --prefix /usr/local` | Installs elsewhere (asks for sudo when needed). |
+| `./setup-linux.sh --appimage` | Also builds `PS5_PKG_Tool-x86_64.AppImage`. |
+| `./setup-linux.sh --uninstall` | Removes the installation. Your settings and library cache are kept. |
+
+There are also `make` shortcuts: `make setup`, `make build`, `make run`, `make demo`, `make test`,
+`make install`, `make uninstall`, `make appimage` and `make clean`.
+
+To update later, run `git pull`, then `./setup-linux.sh --no-deps`.
+
+The sections below explain the manual route.
+
 ### Requirements
 
 - Linux on x86-64, X11 or Wayland.
@@ -232,8 +264,6 @@ The build script finds `~/.dotnet` by itself.
 ### 2. Build
 
 ```sh
-git clone <your fork url> PS5PkgTool
-cd PS5PkgTool
 ./build-linux.sh
 ./dist/bin/ps5pkgtool
 ```
