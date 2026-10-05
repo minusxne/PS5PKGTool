@@ -1,0 +1,63 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>ps5pkgtool-bridge</AssemblyName>
+    <RootNamespace>PS5PKGTool.Bridge</RootNamespace>
+    <Version>1.2.0</Version>
+    <Product>PS5 PKG Tool</Product>
+    <Description>Headless JSON-lines engine behind the Linux (Qt) edition of PS5 PKG Tool.</Description>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <ServerGarbageCollection>false</ServerGarbageCollection>
+    <ConcurrentGarbageCollection>true</ConcurrentGarbageCollection>
+    <!-- The vendored LibProsperoPkg 1.2.0 needs the Magick.NET native library for this platform. -->
+    <MagickNetVersion>14.15.0</MagickNetVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PS5PKGTool.Core\PS5PKGTool.Core.csproj" />
+    <ProjectReference Include="..\PS5PKGTool.Ffpfsc\PS5PKGTool.Ffpfsc.csproj" />
+    <ProjectReference Include="..\PS5PKGTool.Ufs2\PS5PKGTool.Ufs2.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="ProsperoPkgTool">
+      <HintPath>..\PS5PKGTool\ThirdParty\ProsperoPkgTool\ProsperoPkgTool.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- LibProsperoPkg 1.2.0 is loaded from <app>/LibProsperoPkg12 in an isolated load context.
+       libScePubTools.dll is a Windows-only C++/CLI assembly and the win-x64 Magick native cannot
+       load on Linux, so both are left out; the linux-x64 Magick native comes from NuGet below. -->
+  <ItemGroup>
+    <Content Include="..\PS5PKGTool\ThirdParty\LibProsperoPkg12\**\*"
+             Exclude="..\PS5PKGTool\ThirdParty\LibProsperoPkg12\libScePubTools.dll;..\PS5PKGTool\ThirdParty\LibProsperoPkg12\runtimes\**">
+      <Link>LibProsperoPkg12\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageDownload Include="Magick.NET-Q8-x64" Version="[$(MagickNetVersion)]" />
+  </ItemGroup>
+
+  <Target Name="CopyMagickLinuxNative" AfterTargets="Build;Publish">
+    <PropertyGroup>
+      <MagickNativeSource>$(NuGetPackageRoot)magick.net-q8-x64/$(MagickNetVersion)/runtimes/linux-x64/native/</MagickNativeSource>
+    </PropertyGroup>
+    <ItemGroup>
+      <MagickNativeFiles Include="$(MagickNativeSource)*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(MagickNativeFiles)" DestinationFolder="$(OutDir)LibProsperoPkg12/runtimes/linux-x64/native/"
+          SkipUnchangedFiles="true" Condition="'@(MagickNativeFiles)' != ''" />
+    <Copy SourceFiles="@(MagickNativeFiles)" DestinationFolder="$(PublishDir)LibProsperoPkg12/runtimes/linux-x64/native/"
+          SkipUnchangedFiles="true" Condition="'@(MagickNativeFiles)' != '' and '$(PublishDir)' != ''" />
+    <Warning Text="Magick.NET linux-x64 native library not found at $(MagickNativeSource); LibProsperoPkg artwork conversion will be unavailable."
+             Condition="'@(MagickNativeFiles)' == ''" />
+  </Target>
+</Project>
