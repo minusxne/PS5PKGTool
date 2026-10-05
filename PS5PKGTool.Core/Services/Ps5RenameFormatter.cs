@@ -85,11 +85,16 @@ public static class Ps5RenameFormatter
         return result.Length == 0 ? Sanitize(fallback) : result;
     }
 
+    private static readonly char[] WindowsInvalidFileNameChars =
+        [.. Enumerable.Range(0, 32).Select(code => (char)code), '"', '<', '>', '|', ':', '*', '?', '\\', '/'];
+
     /// <summary>Replaces characters Windows forbids and guards reserved device names.</summary>
     public static string Sanitize(string value)
     {
         if (string.IsNullOrEmpty(value)) return string.Empty;
-        char[] invalid = Path.GetInvalidFileNameChars();
+        // The Windows set, not Path.GetInvalidFileNameChars(): on Linux that only lists '\0' and '/', and
+        // names produced here often end up on exFAT/NTFS drives that reject the rest.
+        char[] invalid = WindowsInvalidFileNameChars;
         var builder = new StringBuilder(value.Length);
         foreach (char character in value)
             builder.Append(Array.IndexOf(invalid, character) >= 0 ? '_' : character);

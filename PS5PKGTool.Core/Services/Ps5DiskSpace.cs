@@ -25,8 +25,8 @@ public static class Ps5DiskSpace
     /// <param name="tempDirectory">Workspace folder, or null for the system temp folder.</param>
     public static Ps5DiskSpaceCheck Check(long rawPayloadBytes, string outputPath, string? tempDirectory)
     {
-        DiskSpaceReport report = DiskSpaceGuard.Check(
-            DiskSpaceGuard.Estimate(rawPayloadBytes, outputPath, tempDirectory));
+        DiskSpaceReport report = Measure(
+            HostRequirements(DiskSpaceGuard.Estimate(rawPayloadBytes, outputPath, tempDirectory), outputPath, tempDirectory));
         Ps5DiskSpaceStatus status = report.Status switch
         {
             DiskSpaceStatus.Insufficient => Ps5DiskSpaceStatus.Insufficient,
@@ -43,10 +43,11 @@ public static class Ps5DiskSpace
     public static Ps5DiskSpaceCheck CheckStagedImage(long rawPayloadBytes, long stagingBytes,
         string outputPath, string? tempDirectory)
     {
-        var requirements = DiskSpaceGuard.Estimate(rawPayloadBytes, outputPath, tempDirectory).ToList();
+        var requirements = HostRequirements(DiskSpaceGuard.Estimate(rawPayloadBytes, outputPath, tempDirectory),
+            outputPath, tempDirectory).ToList();
         if (stagingBytes > 0)
         {
-            string tempRoot = Path.GetPathRoot(Path.GetFullPath(tempDirectory ?? Path.GetTempPath())) ?? string.Empty;
+            string tempRoot = Ps5MountInfo.VolumeOf(tempDirectory ?? Path.GetTempPath());
             int index = requirements.FindIndex(requirement =>
                 string.Equals(requirement.Root, tempRoot, StringComparison.OrdinalIgnoreCase));
             if (index >= 0)
@@ -63,7 +64,7 @@ public static class Ps5DiskSpace
             }
         }
 
-        DiskSpaceReport report = DiskSpaceGuard.Check(requirements);
+        DiskSpaceReport report = Measure(requirements);
         Ps5DiskSpaceStatus status = report.Status switch
         {
             DiskSpaceStatus.Insufficient => Ps5DiskSpaceStatus.Insufficient,
@@ -72,6 +73,33 @@ public static class Ps5DiskSpace
         };
         return new Ps5DiskSpaceCheck(status, DiskSpaceGuard.Describe(report));
     }
+
+    /// <summary>
+    /// The engine keys requirements by <see cref="Path.GetPathRoot(string)"/>, which is "/" for every
+    /// path on Linux and macOS, and its default free-space probe cannot read that root there. Off
+    /// Windows the requirements are re-keyed to the real mount points of the output and workspace
+    /// folders (splitting the engine's combined estimate when they live on different volumes).
+    /// </summary>
+    private static IReadOnlyList<SpaceRequirement> HostRequirements(IReadOnlyList<SpaceRequirement> estimate,
+        string outputPath, string? tempDirectory)
+    {
+        if (OperatingSystem.IsWindows()) return estimate;
+        long total = estimate.Sum(requirement => requirement.Bytes);
+        string outputVolume = Ps5MountInfo.VolumeOf(Path.GetDirectoryName(Path.GetFullPath(outputPath)) ?? outputPath);
+        string tempVolume = Ps5MountInfo.VolumeOf(tempDirectory ?? Path.GetTempPath());
+        if (string.Equals(outputVolume, tempVolume, StringComparison.Ordinal))
+            return [new SpaceRequirement(outputVolume, total, "temp workspace + output")];
+        return
+        [
+            new SpaceRequirement(tempVolume, total / 2, "temp workspace"),
+            new SpaceRequirement(outputVolume, total - total / 2, "output"),
+        ];
+    }
+
+    private static DiskSpaceReport Measure(IReadOnlyList<SpaceRequirement> requirements) =>
+        OperatingSystem.IsWindows()
+            ? DiskSpaceGuard.Check(requirements)
+            : DiskSpaceGuard.Check(requirements, root => Ps5MountInfo.AvailableFreeSpace(root) ?? long.MaxValue);
 
     /// <summary>True when the exception is the engine's insufficient-free-space failure.</summary>
     public static bool IsInsufficient(Exception exception) => exception is ProsperoInsufficientSpaceException;

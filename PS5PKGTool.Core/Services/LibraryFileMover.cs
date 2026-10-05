@@ -9,9 +9,7 @@ namespace PS5PKGTool.Core.Services;
 /// </summary>
 public static class LibraryFileMover
 {
-    public static bool SameVolume(string left, string right) =>
-        string.Equals(Path.GetPathRoot(Path.GetFullPath(left)), Path.GetPathRoot(Path.GetFullPath(right)),
-            StringComparison.OrdinalIgnoreCase);
+    public static bool SameVolume(string left, string right) => Ps5MountInfo.SameVolume(left, right);
 
     public static void Move(string source, string target, CancellationToken cancellationToken,
         IProgress<PackageTaskProgress>? progress = null)

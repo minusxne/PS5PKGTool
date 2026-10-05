@@ -21,6 +21,12 @@ public sealed class LppBackend : IPackageBackend
 
     public string DisplayName => "LibProsperoPkg 1.2.0";
 
+    /// <summary>True when the vendored LibProsperoPkg 1.2.0 payload loaded in this process.</summary>
+    public static bool IsAvailable => LibProsperoPkg12.Available;
+
+    /// <summary>Why the vendored payload could not be loaded, or null when it is available.</summary>
+    public static string? UnavailableReason => LibProsperoPkg12.Available ? null : LibProsperoPkg12.LoadError;
+
     public BackendCapabilities Capabilities { get; } = new(
         BuildFromDirectory: true,
         BuildFromImage: false,
@@ -277,7 +283,7 @@ public sealed class LppBackend : IPackageBackend
         foreach (string file in Directory.EnumerateFiles(source))
         {
             string destination = Path.Combine(target, Path.GetFileName(file));
-            if (CreateHardLink(destination, file, IntPtr.Zero))
+            if (TryHardLink(destination, file))
                 continue;
             File.Copy(file, destination); // different volume or a filesystem without hardlinks
         }
@@ -293,9 +299,28 @@ public sealed class LppBackend : IPackageBackend
         catch (UnauthorizedAccessException) { }
     }
 
+    /// <summary>Hard-links <paramref name="existingFile"/>; false means "copy instead" on any platform.</summary>
+    private static bool TryHardLink(string newLink, string existingFile)
+    {
+        try
+        {
+            return OperatingSystem.IsWindows()
+                ? CreateHardLink(newLink, existingFile, IntPtr.Zero)
+                : UnixLink(existingFile, newLink) == 0;
+        }
+        catch (Exception ex) when (ex is DllNotFoundException or EntryPointNotFoundException)
+        {
+            return false;
+        }
+    }
+
     [System.Runtime.InteropServices.DllImport("kernel32.dll",
         CharSet = System.Runtime.InteropServices.CharSet.Unicode, SetLastError = true)]
     private static extern bool CreateHardLink(string newLink, string existingFile, IntPtr securityAttributes);
+
+    [System.Runtime.InteropServices.DllImport("libc", EntryPoint = "link", SetLastError = true)]
+    private static extern int UnixLink([System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPUTF8Str)] string existingFile,
+        [System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPUTF8Str)] string newLink);
 
     private static bool IsUnsupportedLayout(Exception ex)
     {

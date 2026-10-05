@@ -233,7 +233,7 @@ public static class ExfatImage
         string fullPath = Path.GetFullPath(Path.Combine(root,
             relativePath.Replace('/', Path.DirectorySeparatorChar)));
         string prefix = root.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
-        if (!fullPath.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+        if (!fullPath.StartsWith(prefix, (OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal)))
             throw new InvalidDataException("An exFAT entry leaves the extraction directory.");
         return fullPath;
     }

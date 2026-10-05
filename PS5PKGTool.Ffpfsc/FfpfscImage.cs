@@ -407,8 +407,8 @@ public static class FfpfscImage
             cancellationToken.ThrowIfCancellationRequested();
             string relative = entry.Path.Replace('/', Path.DirectorySeparatorChar);
             string target = Path.GetFullPath(Path.Combine(root, relative));
-            if (!string.Equals(target, root, StringComparison.OrdinalIgnoreCase) &&
-                !target.StartsWith(root + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(target, root, (OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal)) &&
+                !target.StartsWith(root + Path.DirectorySeparatorChar, (OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal)))
                 throw new InvalidDataException($"The inner path escapes the output folder: {entry.Path}");
 
             if (entry.IsDirectory)

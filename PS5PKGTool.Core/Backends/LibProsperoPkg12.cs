@@ -36,6 +36,9 @@ internal static class LibProsperoPkg12
     /// <summary>True when the vendored 1.2.0 payload is present and loadable.</summary>
     public static bool Available => Shared.Value is not null;
 
+    /// <summary>The reason the payload failed to load (null until a load was attempted or when it loaded).</summary>
+    public static string? LoadError { get; private set; }
+
     private static string Folder => Path.Combine(AppContext.BaseDirectory, "LibProsperoPkg12");
 
     /// <summary>Builds a package from a folder and returns the produced package path.</summary>
@@ -143,7 +146,10 @@ internal static class LibProsperoPkg12
             string folder = Folder;
             string library = Path.Combine(folder, "LibProsperoPkg.dll");
             if (!File.Exists(library))
+            {
+                LoadError = "The LibProsperoPkg12 folder is missing from the application folder.";
                 return null;
+            }
 
             var context = new IsolatedLoadContext(folder);
             Assembly assembly = context.LoadFromAssemblyPath(library);
@@ -166,8 +172,9 @@ internal static class LibProsperoPkg12
                     ?? throw new MissingMethodException("ExtractInnerFiles"),
             };
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            LoadError = ex.GetBaseException().Message;
             return null;
         }
     }
@@ -201,11 +208,24 @@ internal static class LibProsperoPkg12
 
         protected override IntPtr LoadUnmanagedDll(string unmanagedDllName)
         {
-            foreach (string candidate in new[]
-            {
-                Path.Combine(folder, unmanagedDllName + ".dll"),
-                Path.Combine(folder, "runtimes", "win-x64", "native", unmanagedDllName + ".dll"),
-            })
+            // Windows ships win-x64 natives; Linux builds add the matching linux-x64 .so files
+            // (Magick.NET names its Linux library "<name>.dll.so").
+            string[] candidates = OperatingSystem.IsWindows()
+                ?
+                [
+                    Path.Combine(folder, unmanagedDllName + ".dll"),
+                    Path.Combine(folder, "runtimes", "win-x64", "native", unmanagedDllName + ".dll"),
+                ]
+                :
+                [
+                    Path.Combine(folder, unmanagedDllName + ".dll.so"),
+                    Path.Combine(folder, unmanagedDllName + ".so"),
+                    Path.Combine(folder, "lib" + unmanagedDllName + ".so"),
+                    Path.Combine(folder, "runtimes", "linux-x64", "native", unmanagedDllName + ".dll.so"),
+                    Path.Combine(folder, "runtimes", "linux-x64", "native", unmanagedDllName + ".so"),
+                    Path.Combine(folder, "runtimes", "linux-x64", "native", "lib" + unmanagedDllName + ".so"),
+                ];
+            foreach (string candidate in candidates)
             {
                 if (File.Exists(candidate))
                     return LoadUnmanagedDllFromPath(candidate);

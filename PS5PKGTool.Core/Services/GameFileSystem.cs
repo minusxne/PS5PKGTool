@@ -383,7 +383,7 @@ public static class GameFileSystem
             string fullPath = Path.GetFullPath(Path.Combine(_root,
                 NormalizePath(relativePath).Replace('/', Path.DirectorySeparatorChar)));
             string prefix = _root.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
-            if (!fullPath.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            if (!fullPath.StartsWith(prefix, (OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal)))
                 throw new IOException("The requested path leaves the game root.");
             return fullPath;
         }
