@@ -32,6 +32,8 @@ FocusScope {
         info = null
         error = ""
         editing = false
+        output = ""
+        suggestedOutput = ""
         if (!path) return
         App.call("tools.inspect", { source: path }, function (result) {
             info = result
@@ -76,9 +78,29 @@ FocusScope {
         options = Object.assign({}, options, remembered[id] || builder.defaults, { backend: id })
     }
 
+    // The path suggestOutput() last filled in. While the output still equals it, the user has not
+    // typed or browsed a path of their own and a new suggestion can replace it.
+    property string suggestedOutput: ""
+
+    // Looks the target up from `info` itself: the targetInfo binding may not have re-evaluated yet
+    // when onTargetChanged runs, which made the output name lag one choice behind (picking FFPKG
+    // after exFAT kept the ".exfat" name for an FFPKG image).
     function suggestOutput() {
-        if (!info) { output = ""; return }
-        output = action === "extract" ? info.extractOutput : targetInfo ? targetInfo.output : ""
+        if (!info) { output = ""; suggestedOutput = ""; return }
+        const wanted = info.targets.find(function (t) { return t.id === target })
+        const suggestion = action === "extract" ? info.extractOutput : wanted ? wanted.output : ""
+        // A path the user chose keeps its folder and name; only the image extension follows the target.
+        if (action === "convert" && wanted && output.length > 0 && output !== suggestedOutput) {
+            const known = info.targets.map(function (t) { return t.extension })
+            const current = known.find(function (ext) { return output.toLowerCase().endsWith(ext) })
+            if (current) {
+                output = output.slice(0, output.length - current.length) + wanted.extension
+                diskTimer.restart()
+                return
+            }
+        }
+        suggestedOutput = suggestion
+        output = suggestion
         diskTimer.restart()
     }
     onActionChanged: suggestOutput()

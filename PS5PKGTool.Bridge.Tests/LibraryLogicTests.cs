@@ -1,4 +1,6 @@
 using PS5PKGTool.Bridge.Library;
+using PS5PKGTool.Bridge.Protocol;
+using PS5PKGTool.Bridge.Tools;
 using PS5PKGTool.Core.Models;
 
 namespace PS5PKGTool.Bridge.Tests;
@@ -108,5 +110,26 @@ public class LibraryLogicTests
         Assert.True(LibraryQuery.TryParseSize("1.5GB", out long gb));
         Assert.True(LibraryQuery.TryParseSize("1.5GiB", out long gib));
         Assert.Equal(gb, gib);
+    }
+
+    [Theory]
+    [InlineData("/out/game.exfat", "exfat")]
+    [InlineData("/out/game.FFPKG", "ffpkg")]
+    [InlineData("/out/game.ffpfsc", "ffpfsc")]
+    [InlineData("/out/game.pkg", "pkg")]
+    [InlineData("/out/game.img", "ffpkg")]
+    [InlineData("/out/game", "exfat")]
+    public void Output_extension_matching_the_target_or_unknown_is_accepted(string output, string target) =>
+        ToolsService.CheckOutputExtension(output, target);
+
+    [Theory]
+    [InlineData("/out/game.exfat", "ffpkg")]
+    [InlineData("/out/game.ffpkg", "exfat")]
+    [InlineData("/out/game.exfat", "ffpfsc")]
+    [InlineData("/out/game.ffpfsc", "pkg")]
+    public void Output_named_for_another_format_is_refused(string output, string target)
+    {
+        RpcException error = Assert.Throws<RpcException>(() => ToolsService.CheckOutputExtension(output, target));
+        Assert.Equal("bad_request", error.Code);
     }
 }

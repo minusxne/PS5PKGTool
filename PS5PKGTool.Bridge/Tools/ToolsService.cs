@@ -268,6 +268,28 @@ public sealed class ToolsService(BridgeState state, LibraryService library, Task
         };
     }
 
+    private static readonly Dictionary<string, (string Extension, string Label)> TargetFiles = new(StringComparer.Ordinal)
+    {
+        ["exfat"] = (".exfat", "an exFAT image"),
+        ["ffpkg"] = (".ffpkg", "an FFPKG image"),
+        ["ffpfsc"] = (".ffpfsc", "an FFPFSC image"),
+        ["pkg"] = (".pkg", "a debug package")
+    };
+
+    /// <summary>
+    /// Refuses an output named for a different format than the one being written, such as an FFPKG
+    /// image saved as "game.exfat". Other names (no extension, ".img", …) are left to the user.
+    /// </summary>
+    public static void CheckOutputExtension(string output, string target)
+    {
+        if (!TargetFiles.TryGetValue(target, out var wanted)) return;
+        string extension = Path.GetExtension(output);
+        if (extension.Equals(wanted.Extension, StringComparison.OrdinalIgnoreCase)) return;
+        if (TargetFiles.Values.Any(known => extension.Equals(known.Extension, StringComparison.OrdinalIgnoreCase)))
+            throw RpcException.BadRequest(
+                $"The output name ends in {extension} but this job writes {wanted.Label}. Rename it to end in {wanted.Extension}.");
+    }
+
     /// <summary>Validates the request and queues the job.</summary>
     public object Enqueue(RpcRequest request)
     {
@@ -294,6 +316,7 @@ public sealed class ToolsService(BridgeState state, LibraryService library, Task
                     throw RpcException.BadRequest("The output must be different from the source.");
                 if (!overwrite && File.Exists(output))
                     throw RpcException.BadRequest("The output file already exists. Turn on Overwrite or choose another name.");
+                CheckOutputExtension(output, target);
                 if (target == "pkg") return EnqueueBuild(source, output, overwrite, passcode, options, payload);
                 Ps5ImageConversionTarget conversion = target switch
                 {
