@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.21)
 
-project(ps5pkgtool VERSION 1.2.0 LANGUAGES CXX
+project(ps5pkgtool VERSION 1.2.1 LANGUAGES CXX
         DESCRIPTION "PS5 PKG Tool - Linux edition"
         HOMEPAGE_URL "https://github.com/pearlxcore/PS5PkgTool")
 
