@@ -1,6 +1,12 @@
 # PS5 PKG Tool
 
-<img alt="PS5 PKG Tool, Linux edition: the home screen" src="screenshots/linux-games.png" />
+| With dummy info | With games |
+|---|---|
+| <img alt="Linux edition home screen with the built-in demo library" src="screenshots/linux-games.png" /> | <img alt="Linux edition home screen with a game" src="screenshots/linux-games-real.png" /> |
+| The built-in `--demo` library of fictional titles. | A game in FFPFSC format with its artwork, trophies and file facts. |
+
+> **Disclaimer:** the game in the "With games" screenshot is a fake game file made for this
+> screenshot. It is not a pirated copy or a real dump.
 
 [![Github All Releases](https://img.shields.io/github/downloads/pearlxcore/PS5PKGTool/total.svg)](https://github.com/pearlxcore/PS5PKGTool/releases/latest)
 [![License](https://img.shields.io/github/license/pearlxcore/PS5PKGTool.svg)](LICENSE)
